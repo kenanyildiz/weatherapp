@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html ng-app="weatherApp">
+<head lang="tr-TR">
+    <meta charset="UTF-8">
+    <title>Weather App</title>
+    <link rel="stylesheet" type="text/css" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="css/main.css"/>
+
+</head>
+<body ng-controller="weatherCtrl">
+
+<div ng-dropdown-multiselect="" events="ddEvents" options="citiesData" selected-model="dummyModel" extra-settings="ddSettings"></div>
+
+<div>
+    <h1 class="current-place">Forecast For <span class="appended"></span></h1>
+    <h3><img class="img-thumbnail forecast-img" src="http://l.yimg.com/a/i/us/we/52/{{place.item.condition.code}}.gif" />Current: {{ place.item.condition.text }} | {{ place.item.condition.temp }}°</h3>
+    <div class="row">
+        <div class="col-xs-12 col-sm-6" ng-repeat="forecast in place.item.forecast">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h4><img class="img-thumbnail forecast-img" src="http://l.yimg.com/a/i/us/we/52/{{forecast.code}}.gif" /><strong>{{ forecast.date }}</strong></h4>
+                </div>
+                <div class="panel-body">
+                    <p>{{ forecast.text }}</p>
+                    <p>H: {{ forecast.high }}° | L: {{ forecast.low }}°</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="bower_components/angular/angular.js"></script>
+<script type="text/javascript" src="bower_components/angular-route/angular-route.js"></script>
+<script type="text/javascript" src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+<script type="text/javascript" src="bower_components/angular-touch/angular-touch.min.js"></script>
+<script type="text/javascript" src="bower_components/angular-animate/angular-animate.js"></script>
+<script type="text/javascript" src="bower_components/lodash/dist/lodash.min.js"></script>
+<script type="text/javascript" src="bower_components/highlightjs/highlight.pack.js"></script>
+<script type="text/javascript" src="bower_components/angular-highlightjs/angular-highlightjs.js"></script>
+<script type="text/javascript" src="js/ui-bootstrap-tpls.js"></script>
+<script type="text/javascript" src="js/angularjs-dropdown-multiselect.js"></script>
+<script type="text/javascript" src="js/app.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+
+</body>
+</html>

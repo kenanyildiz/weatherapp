@@ -1,0 +1,6 @@
+* { margin: 0; padding: 0; }
+body { padding: 10px; }
+a { cursor: pointer; }
+.form-control { float: left; margin-right: 10px; width: 70%; }
+.forecast-img { margin-right: 10px; width: 45px; }
+.hidden { display: none !important; }
