@@ -1,6 +1,6 @@
-var app = angular.module('weatherApp', ['angularjs-dropdown-multiselect' ])
+var app = angular.module('weatherApp', ['angularjs-dropdown-multiselect']);
 
-.controller('weatherCtrl', ['$scope', 'cityService', 'weatherService', function($scope, cityService, weatherService) {
+app.controller('weatherCtrl', ['$scope', 'myDataService', function($scope, myDataService) {
 
     $scope.findWeather = function(city) {
         $scope.items = '';
@@ -20,7 +20,7 @@ var app = angular.module('weatherApp', ['angularjs-dropdown-multiselect' ])
         scrollable: true
     };
 
-    cityService.getCity().then(function(data){
+    myDataService.getData('js/jsData/CitiesData.json').then(function(data){
         parseCityData(data);
     });
 
@@ -31,21 +31,52 @@ var app = angular.module('weatherApp', ['angularjs-dropdown-multiselect' ])
     }
 
     function fetchWeather(city) {
-        weatherService.getWeather(city).then(function(data){
-            $scope.place = data;
+        var weatherQuery = 'select * from weather.forecast where woeid in (select woeid from geo.places(1) where text="'+city+'")',
+            weatherURL   = "http://query.yahooapis.com/v1/public/yql?q=" + weatherQuery + "&format=json&callback=";
+        myDataService.getData(weatherURL).then(function(data){
+            $scope.place = data.query.results.channel;
         });
     }
 
     $scope.ddEvents = {
         onItemSelect: function(item){
-            $scope.findWeather(item.id);
+            $scope.$emit('myCustomEvent', item.id);
         }
     };
 
-}])
+}]);
 
-.factory('cityService', ['$http', '$q', function ($http, $q){
-    function getCity () {
+app.directive('myDropdown', function(){
+   return {
+       restrict: 'A',
+       link: function(scope,element,attr){
+           scope.$on('myCustomEvent', function (event, itemID) {
+               scope.findWeather(itemID);
+           });
+       }
+   }
+});
+
+app.service('myDataService', ['$http', '$q', function ($http, $q) {
+    this.getData = function ($url) {
+        var deferred = $q.defer();
+        $http.get(
+            $url
+        ).success(function(data){
+                deferred.resolve(data);
+            }).error(function(err){
+                console.log('Error retrieving markets');
+                deferred.reject(err);
+            });
+        return deferred.promise;
+    };
+}]);
+
+/*app.factory('cityAPIService', ['$http', '$q', function ($http, $q){
+
+    var cityAPI = {};
+
+    cityAPI.getCity = function() {
         var deferred = $q.defer(),
             url   = 'js/jsData/CitiesData.json';
         $http.get(url)
@@ -57,16 +88,17 @@ var app = angular.module('weatherApp', ['angularjs-dropdown-multiselect' ])
                 deferred.reject(err);
             });
         return deferred.promise
-    }
-
-    return {
-        getCity: getCity
     };
-}])
 
+    return cityAPI;
 
-.factory('weatherService', ['$http', '$q', function ($http, $q){
-    function getWeather (city) {
+}]);*/
+
+/*app.factory('weatherAPIService', ['$http', '$q', '$myDataService', function ($http, $q, myDataService){
+
+    var weatherAPI = {};
+
+    weatherAPI.getWeather = function (city) {
         var deferred = $q.defer(),
             query    = 'select * from weather.forecast where woeid in (select woeid from geo.places(1) where text="'+city+'")',
             url      = "http://query.yahooapis.com/v1/public/yql?q=" + query + "&format=json&callback=";
@@ -79,9 +111,8 @@ var app = angular.module('weatherApp', ['angularjs-dropdown-multiselect' ])
                 deferred.reject(err);
             });
         return deferred.promise;
-    }
-
-    return {
-        getWeather: getWeather
     };
-}]);
+
+    return weatherAPI;
+
+}]);*/
