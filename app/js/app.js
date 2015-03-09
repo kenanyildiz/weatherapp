@@ -4,7 +4,7 @@ app.controller('weatherCtrl', ['$scope', 'myDataService', function($scope, myDat
 
     $scope.findWeather = function(city) {
         $scope.items = '';
-        fetchWeather(city);
+        fetchWeather($scope,myDataService,city);
     };
 
     $scope.dummyModel = {};
@@ -20,23 +20,9 @@ app.controller('weatherCtrl', ['$scope', 'myDataService', function($scope, myDat
         scrollable: true
     };
 
-    myDataService.getData('js/jsData/CitiesData.json').then(function(data){
-        parseCityData(data);
+    myDataService.getData('js/jsData/CitiesData.json').then(function(dataResponse){
+        parseCityData($scope,dataResponse.data);
     });
-
-    function parseCityData(citiesData){
-        for(var i in citiesData.data){
-            $scope.citiesData.push({id: citiesData.data[i].ID, label: citiesData.data[i].Name});
-        }
-    }
-
-    function fetchWeather(city) {
-        var weatherQuery = 'select * from weather.forecast where woeid in (select woeid from geo.places(1) where text="'+city+'")',
-            weatherURL   = "http://query.yahooapis.com/v1/public/yql?q=" + weatherQuery + "&format=json&callback=";
-        myDataService.getData(weatherURL).then(function(data){
-            $scope.place = data.query.results.channel;
-        });
-    }
 
     $scope.ddEvents = {
         onItemSelect: function(item){
@@ -57,20 +43,26 @@ app.directive('myDropdown', function(){
    }
 });
 
-app.service('myDataService', ['$http', '$q', function ($http, $q) {
+app.service('myDataService', ['$http', function ($http) {
     this.getData = function ($url) {
-        var deferred = $q.defer();
-        $http.get(
-            $url
-        ).success(function(data){
-                deferred.resolve(data);
-            }).error(function(err){
-                console.log('Error retrieving markets');
-                deferred.reject(err);
-            });
-        return deferred.promise;
+        return $http.get($url);
     };
 }]);
+
+// Global functions
+function parseCityData(scopeVar,citiesData){
+    for(var i in citiesData.data){
+        scopeVar.citiesData.push({id: citiesData.data[i].ID, label: citiesData.data[i].Name});
+    }
+}
+
+function fetchWeather(scopeVar,service,city) {
+    var weatherQuery = 'select * from weather.forecast where woeid in (select woeid from geo.places(1) where text="'+city+'")',
+        weatherURL   = "http://query.yahooapis.com/v1/public/yql?q=" + weatherQuery + "&format=json&callback=";
+    service.getData(weatherURL).then(function(dataResponse){
+        scopeVar.place = dataResponse.data.query.results.channel;
+    });
+}
 
 /*app.factory('cityAPIService', ['$http', '$q', function ($http, $q){
 
