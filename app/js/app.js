@@ -1,10 +1,10 @@
 var app = angular.module('weatherApp', ['angularjs-dropdown-multiselect']);
 
-app.controller('weatherCtrl', ['$scope', 'myDataService', function($scope, myDataService) {
+app.controller('weatherCtrl', ['$scope', 'cityAPIService', 'weatherAPIService', function($scope, $cityAPIService, $weatherAPIService) {
 
     $scope.findWeather = function(city) {
         $scope.items = '';
-        fetchWeather($scope,myDataService,city);
+        fetchWeather($scope,$weatherAPIService,city);
     };
 
     $scope.dummyModel = {};
@@ -20,33 +20,35 @@ app.controller('weatherCtrl', ['$scope', 'myDataService', function($scope, myDat
         scrollable: true
     };
 
-    myDataService.getData('js/jsData/CitiesData.json').then(function(dataResponse){
+    $cityAPIService.getCity().then(function(dataResponse){
         parseCityData($scope,dataResponse.data);
     });
 
     $scope.ddEvents = {
         onItemSelect: function(item){
-            $scope.$emit('myCustomEvent', item.id);
+            $scope.findWeather(item.id);
         }
     };
 
 }]);
 
-app.directive('myDropdown', function(){
-   return {
-       restrict: 'A',
-       link: function(scope,element,attr){
-           scope.$on('myCustomEvent', function (event, itemID) {
-               scope.findWeather(itemID);
-           });
-       }
-   }
-});
+app.factory('cityAPIService', ['$http', function ($http){
+    var cityAPI = {};
+        cityAPI.getCity = function() {
+            var url   = 'js/jsData/CitiesData.json';
+            return $http.get(url);
+        };
+    return cityAPI;
+}]);
 
-app.service('myDataService', ['$http', function ($http) {
-    this.getData = function ($url) {
-        return $http.get($url);
-    };
+app.factory('weatherAPIService', ['$http', function ($http){
+    var weatherAPI = {};
+        weatherAPI.getWeather = function (city) {
+            var query = 'select * from weather.forecast where woeid in (select woeid from geo.places(1) where text="'+city+'")',
+                url   = "http://query.yahooapis.com/v1/public/yql?q=" + query + "&format=json&callback=";
+            return $http.get(url);
+        };
+    return weatherAPI;
 }]);
 
 // Global functions
@@ -57,54 +59,14 @@ function parseCityData(scopeVar,citiesData){
 }
 
 function fetchWeather(scopeVar,service,city) {
-    var weatherQuery = 'select * from weather.forecast where woeid in (select woeid from geo.places(1) where text="'+city+'")',
-        weatherURL   = "http://query.yahooapis.com/v1/public/yql?q=" + weatherQuery + "&format=json&callback=";
-    service.getData(weatherURL).then(function(dataResponse){
+    service.getWeather(city).then(function(dataResponse){
         scopeVar.place = dataResponse.data.query.results.channel;
     });
 }
 
-/*app.factory('cityAPIService', ['$http', '$q', function ($http, $q){
-
-    var cityAPI = {};
-
-    cityAPI.getCity = function() {
-        var deferred = $q.defer(),
-            url   = 'js/jsData/CitiesData.json';
-        $http.get(url)
-            .success(function(data){
-                deferred.resolve(data);
-            })
-            .error(function(err){
-                console.log('Error retrieving markets');
-                deferred.reject(err);
-            });
-        return deferred.promise
+/*app.service('myDataService', ['$http', function ($http) {
+    this.getData = function ($url) {
+        return $http.get($url);
     };
-
-    return cityAPI;
-
 }]);*/
 
-/*app.factory('weatherAPIService', ['$http', '$q', '$myDataService', function ($http, $q, myDataService){
-
-    var weatherAPI = {};
-
-    weatherAPI.getWeather = function (city) {
-        var deferred = $q.defer(),
-            query    = 'select * from weather.forecast where woeid in (select woeid from geo.places(1) where text="'+city+'")',
-            url      = "http://query.yahooapis.com/v1/public/yql?q=" + query + "&format=json&callback=";
-        $http.get(url)
-            .success(function(data){
-                deferred.resolve(data.query.results.channel);
-            })
-            .error(function(err){
-                console.log('Error retrieving markets');
-                deferred.reject(err);
-            });
-        return deferred.promise;
-    };
-
-    return weatherAPI;
-
-}]);*/
