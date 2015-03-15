@@ -1,14 +1,11 @@
 var PR = {
 
     init: function(){
-
-        // trigger Istanbul
-        $('.multiselect-parent li[role="presentation"]:eq(39) a').trigger('click');
-
+        // trigger random a city
+        var rnd = Math.floor((Math.random() * 81) + 1);
+        $('.multiselect-parent li[role="presentation"]:eq('+rnd+') a').trigger('click');
     }
 
 };
 
-$(window).load(function(){
-    PR.init();
-});
+$(window).load(PR.init);

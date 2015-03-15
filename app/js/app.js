@@ -2,11 +2,6 @@ var app = angular.module('weatherApp', ['angularjs-dropdown-multiselect']);
 
 app.controller('weatherCtrl', ['$scope', 'cityAPIService', 'weatherAPIService', function($scope, $cityAPIService, $weatherAPIService) {
 
-    $scope.findWeather = function(city) {
-        $scope.items = '';
-        fetchWeather($scope,$weatherAPIService,city);
-    };
-
     $scope.dummyModel = {};
     $scope.citiesData = [];
     $scope.ddSettings = {
@@ -21,8 +16,14 @@ app.controller('weatherCtrl', ['$scope', 'cityAPIService', 'weatherAPIService', 
     };
 
     $cityAPIService.getCity().then(function(dataResponse){
-        parseCityData($scope,dataResponse.data);
+        $scope.parseCityData(dataResponse.data);
     });
+
+    $scope.parseCityData = function (citiesData){
+        for(var i in citiesData.data){
+            $scope.citiesData.push({id: citiesData.data[i].ID, label: citiesData.data[i].Name});
+        }
+    };
 
     $scope.ddEvents = {
         onItemSelect: function(item){
@@ -30,7 +31,27 @@ app.controller('weatherCtrl', ['$scope', 'cityAPIService', 'weatherAPIService', 
         }
     };
 
+    $scope.findWeather = function(city) {
+        $scope.items = '';
+        $scope.fetchWeather(city);
+    };
+
+    $scope.fetchWeather = function(city) {
+        $weatherAPIService.getWeather(city).then(function(dataResponse){
+            $scope.place = dataResponse.data.query.results.channel;
+        });
+    };
+
 }]);
+
+/*app.directive('role', function(){
+   return {
+       restrict: 'A',
+       compile: function(scope,element){
+           console.log(element);
+       }
+   }
+});*/
 
 app.factory('cityAPIService', ['$http', function ($http){
     var cityAPI = {};
@@ -50,19 +71,6 @@ app.factory('weatherAPIService', ['$http', function ($http){
         };
     return weatherAPI;
 }]);
-
-// Global functions
-function parseCityData(scopeVar,citiesData){
-    for(var i in citiesData.data){
-        scopeVar.citiesData.push({id: citiesData.data[i].ID, label: citiesData.data[i].Name});
-    }
-}
-
-function fetchWeather(scopeVar,service,city) {
-    service.getWeather(city).then(function(dataResponse){
-        scopeVar.place = dataResponse.data.query.results.channel;
-    });
-}
 
 /*app.service('myDataService', ['$http', function ($http) {
     this.getData = function ($url) {

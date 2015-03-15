@@ -8,9 +8,7 @@
 
 </head>
 <body ng-controller="weatherCtrl">
-
 <div ng-dropdown-multiselect="" events="ddEvents" options="citiesData" selected-model="dummyModel" extra-settings="ddSettings"></div>
-
 <div>
     <h1 class="current-place">Forecast For <span class="appended"></span></h1>
     <h3><img class="img-thumbnail forecast-img" src="http://l.yimg.com/a/i/us/we/52/{{place.item.condition.code}}.gif" />Current: {{ place.item.condition.text }} | {{ place.item.condition.temp }}°</h3>
@@ -28,8 +26,6 @@
         </div>
     </div>
 </div>
-
-
 <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
 <script type="text/javascript" src="bower_components/angular/angular.js"></script>
 <script type="text/javascript" src="bower_components/angular-route/angular-route.js"></script>
@@ -43,6 +39,5 @@
 <script type="text/javascript" src="js/angularjs-dropdown-multiselect.js"></script>
 <script type="text/javascript" src="js/app.js"></script>
 <script type="text/javascript" src="js/main.js"></script>
-
 </body>
 </html>
